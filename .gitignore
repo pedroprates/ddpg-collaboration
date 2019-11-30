@@ -3,3 +3,4 @@ env/
 Tennis.ipynb
 .vscode/
 .pylintrc
+*.pyc
