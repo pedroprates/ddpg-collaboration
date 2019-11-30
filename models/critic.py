@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from utils.utils import hidden_init, reset_parameters
+from utils.utils import reset_parameters
 
 class Critic(nn.Module):
     """ Critic (value) model """
