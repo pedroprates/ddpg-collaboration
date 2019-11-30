@@ -6,7 +6,7 @@ def hidden_init(layer):
 
     return -lim, lim
 
-def reset_parameters(fc1, fc2, fc2):
+def reset_parameters(fc1, fc2, fc3):
         fc1.weight.data.uniform_(*hidden_init(fc1))
         fc2.weight.data.uniform_(*hidden_init(fc2))
         fc3.weight.data.uniform_(-3e-3, 3e-3)
