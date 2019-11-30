@@ -19,6 +19,7 @@ class Critic(nn.Module):
             l2 (int): size of the second layer
         """
         super(Critic, self).__init__()
+        self.seed = torch.manual_seed(seed)
 
         self.fc1 = nn.Linear(state_size, l1)
         self.bn1 = nn.BatchNorm1d(l1)
