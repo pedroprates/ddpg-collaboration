@@ -1,7 +1,8 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from utils.utils import reset_parameters
+from torchsummary import summary
+from utils.utils import hidden_init
 
 class Actor(nn.Module):
     """ Actor (policy) model """
@@ -19,13 +20,18 @@ class Actor(nn.Module):
         """
         super(Actor, self).__init__()
         self.seed = torch.manual_seed(seed)
-
+        
         self.fc1 = nn.Linear(state_size, l1)
         self.bn1 = nn.BatchNorm1d(l1)
         self.fc2 = nn.Linear(l1, l2)
         self.fc3 = nn.Linear(l2, action_size)
 
-        reset_parameters(self.fc1, self.fc2, self.fc3)
+        self.reset_parameters()
+
+    def reset_parameters(self):
+        self.fc1.weight.data.uniform_(*hidden_init(self.fc1))
+        self.fc2.weight.data.uniform_(*hidden_init(self.fc2))
+        self.fc3.weight.data.uniform_(-3e-3, 3e-3)
 
     def forward(self, state):
         """ Forward propagation on the Actor (policy) network, mapping states -> actions """

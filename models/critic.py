@@ -1,8 +1,9 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torchsummary import summary
 
-from utils.utils import reset_parameters
+from utils.utils import hidden_init
 
 class Critic(nn.Module):
     """ Critic (value) model """
@@ -20,17 +21,22 @@ class Critic(nn.Module):
         """
         super(Critic, self).__init__()
         self.seed = torch.manual_seed(seed)
-
+        
         self.fc1 = nn.Linear(state_size, l1)
         self.bn1 = nn.BatchNorm1d(l1)
-        self.fc2 = nn.Linear(state_size+action_size, l2)
+        self.fc2 = nn.Linear(l1+action_size, l2)
         self.fc3 = nn.Linear(l2, 1)
 
-        reset_parameters(self.fc1, self.fc2, self.fc3)
+        self.reset_parameters()
+
+    def reset_parameters(self):
+        self.fc1.weight.data.uniform_(*hidden_init(self.fc1))
+        self.fc2.weight.data.uniform_(*hidden_init(self.fc2))
+        self.fc3.weight.data.uniform_(-3e-3, 3e-3)
 
     def forward(self, state, action):
         x = F.relu(self.bn1(self.fc1(state)))
-        sa = torch.cat((x, action), dim=1)
+        sa = torch.cat((x.float(), action.float()), dim=1)
         sa = F.relu(self.fc2(sa))
 
         return self.fc3(sa)
