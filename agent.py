@@ -9,14 +9,14 @@ from models.critic import Critic
 from utils.noise import OrsnteinUhlenbeck
 from utils.replay import ReplayBuffer
 
-LR_ACTOR = 6e-4
-LR_CRITIC = 1e-3
+LR_ACTOR = 5e-4
+LR_CRITIC = 2e-4
 WEIGHT_DECAY = 0
-TAU = 1e-3
-BUFFER_SIZE = int(1e6)
+TAU = 2e-3
+BUFFER_SIZE = int(1e5)
 BATCH_SIZE = 128
-LEARN_STEPS = 20
-N_UPDATES = 10
+LEARN_STEPS = 1
+N_UPDATES = 1
 GAMMA = .99
 DEVICE = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
@@ -40,8 +40,8 @@ class Agent:
         self.state_size = state_size
         self.action_size = action_size
         self.random_seed = random_seed
-        random.seed(seed)
-        np.random.seed(seed)
+        self.seed = random.seed(random_seed)
+        np.random.seed(random_seed)
 
         # Actor
         self.actor_local = Actor(self.state_size, self.action_size, self.random_seed, *actor_layers).to(DEVICE)
@@ -54,7 +54,7 @@ class Agent:
         self.critic_optimizer = Adam(self.critic_local.parameters(), lr=LR_CRITIC, weight_decay=WEIGHT_DECAY)
 
         # Noise - using Ornstein-Uhlenbeck
-        self.noise = OrsnteinUhlenbeck(self.action_size, self.random_seed, scale=1.0)
+        self.noise = OrsnteinUhlenbeck(self.action_size, scale=1.0, sigma=0.1)
 
         # ReplayBuffer
         self.memory = ReplayBuffer(self.action_size, BUFFER_SIZE, BATCH_SIZE, self.random_seed)
@@ -79,7 +79,8 @@ class Agent:
             actions = self.actor_local(state).cpu().data.numpy()
         
         if add_noise:
-            actions += self.noise.sample() * epsilon
+            actions += self.noise.noise() * epsilon
+            # actions += np.random.normal(0, .3) * epsilon
         
         return np.clip(actions, -1, 1)
 
@@ -107,7 +108,7 @@ class Agent:
         Q_targets = rewards + (gamma * Q_targets_next * (1 - dones))
 
         Q_expected = self.critic_local(states, actions)
-        critic_loss = F.mse_loss(Q_expected, Q_targets_next)
+        critic_loss = F.mse_loss(Q_expected, Q_targets)
 
         self.critic_optimizer.zero_grad()
         critic_loss.backward()
