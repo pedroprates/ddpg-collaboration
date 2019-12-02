@@ -1,7 +1,6 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torchsummary import summary
 from utils.utils import hidden_init
 
 class Actor(nn.Module):
@@ -20,7 +19,7 @@ class Actor(nn.Module):
         """
         super(Actor, self).__init__()
         self.seed = torch.manual_seed(seed)
-        
+
         self.fc1 = nn.Linear(state_size, l1)
         self.bn1 = nn.BatchNorm1d(l1)
         self.fc2 = nn.Linear(l1, l2)
